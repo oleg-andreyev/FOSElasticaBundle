@@ -18,7 +18,7 @@ class MappingBuilder
 {
     /**
      * Skip adding default information to certain fields.
-     * 
+     *
      * @var array
      */
     private $skipTypes = array('completion');
@@ -36,10 +36,11 @@ class MappingBuilder
             $typeMappings[$typeConfig->getName()] = $this->buildTypeMapping($typeConfig);
         }
 
-        $mapping = array(
-            'mappings' => $typeMappings,
-            // 'warmers' => $indexConfig->getWarmers(),
-        );
+        $mapping = array();
+        if ($typeMappings) {
+            $mapping['mappings'] = $typeMappings;
+        }
+        // 'warmers' => $indexConfig->getWarmers(),
 
         $settings = $indexConfig->getSettings();
         if ($settings) {
