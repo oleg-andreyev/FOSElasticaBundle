@@ -55,8 +55,7 @@ class AliasProcessor
         if (count($aliasedIndexes) > 1) {
             throw new \RuntimeException(
                 sprintf(
-                    'Alias %s is used for multiple indexes: [%s].
-                    Make sure it\'s either not used or is assigned to one index only',
+                    'Alias %s is used for multiple indexes: [%s]. Make sure it\'s either not used or is assigned to one index only',
                     $aliasName,
                     join(', ', $aliasedIndexes)
                 )
@@ -82,14 +81,24 @@ class AliasProcessor
         } catch (ExceptionInterface $renameAliasException) {
             $additionalError = '';
             // if we failed to move the alias, delete the newly built index
-            $this->deleteIndexes($index, $newIndexName);
+            try {
+                $this->deleteIndexes($index, $newIndexName);
+            } catch (\RuntimeException $deleteNewIndexException) {
+                $additionalError = sprintf(
+                    'Tried to delete newly built index %s, but also failed: %s',
+                    $newIndexName,
+                    $deleteNewIndexException->getPrevious()->getMessage()
+                );
+            }
 
             throw new \RuntimeException(
                 sprintf(
                     'Failed to updated index alias: %s. %s',
                     $renameAliasException->getMessage(),
                     $additionalError ?: sprintf('Newly built index %s was deleted', $newIndexName)
-                ), 0, $renameAliasException
+                ),
+                0,
+                $renameAliasException
             );
         }
 
@@ -102,17 +111,15 @@ class AliasProcessor
         }
 
         $offset = count($similarIndexes) - $indexConfig->getSaveLastIndex();
-        $toDelete = array_slice($similarIndexes, 0, $offset);
-        $similarIndexes = array_slice($similarIndexes, $offset);
-ld($index->getName(), $oldIndexName, $toDelete, $similarIndexes);
-        $this->deleteIndexes($index, $toDelete);
+        $this->deleteIndexes($index, array_slice($similarIndexes, 0, $offset));
     }
 
     /**
      * Finding simalar indexes by new index name
      * Index is similar, if index name is similar for >= 90%
      *
-     * @param Index $index
+     * @param Index  $index
+     * @param string $newIndexName
      *
      * @return array
      */
