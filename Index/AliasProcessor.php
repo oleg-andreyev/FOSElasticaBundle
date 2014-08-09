@@ -82,15 +82,7 @@ class AliasProcessor
         } catch (ExceptionInterface $renameAliasException) {
             $additionalError = '';
             // if we failed to move the alias, delete the newly built index
-            try {
-                $index->delete();
-            } catch (ExceptionInterface $deleteNewIndexException) {
-                $additionalError = sprintf(
-                    'Tried to delete newly built index %s, but also failed: %s',
-                    $newIndexName,
-                    $deleteNewIndexException->getMessage()
-                );
-            }
+            $this->deleteIndexes($index, $newIndexName);
 
             throw new \RuntimeException(
                 sprintf(
@@ -101,18 +93,78 @@ class AliasProcessor
             );
         }
 
-        // Delete the old index after the alias has been switched
+        // Delete the old index(es) after the alias has been switched
+        $similarIndexes = $this->findSimilarIndexes($index, $newIndexName);
         if ($oldIndexName) {
-            $oldIndex = new Index($client, $oldIndexName);
+            $similarIndexes[] = $oldIndexName;
+            $similarIndexes = array_unique($similarIndexes);
+            sort($similarIndexes);
+        }
+
+        $offset = count($similarIndexes) - $indexConfig->getSaveLastIndex();
+        $toDelete = array_slice($similarIndexes, 0, $offset);
+        $similarIndexes = array_slice($similarIndexes, $offset);
+ld($index->getName(), $oldIndexName, $toDelete, $similarIndexes);
+        $this->deleteIndexes($index, $toDelete);
+    }
+
+    /**
+     * Finding simalar indexes by new index name
+     * Index is similar, if index name is similar for >= 90%
+     *
+     * @param Index $index
+     *
+     * @return array
+     */
+    private function findSimilarIndexes(Index $index, $newIndexName)
+    {
+        $client = $index->getClient();
+        $indexesInfo = $client->request('_aliases', 'GET')->getData();
+
+        $similarIndexes = array();
+        foreach ($indexesInfo as $indexName => $indexInfo) {
+            if ($newIndexName === $indexName) {
+                continue;
+            }
+
+            similar_text($newIndexName, $indexName, $percent);
+            if ($percent >= 90) { //90% of similarity is more then enough
+                $similarIndexes[] = $indexName;
+            }
+        }
+        sort($similarIndexes); //sort in asc oldest first, newest last
+        return $similarIndexes;
+    }
+
+    /**
+     * Deleting index(es)
+     *
+     * @param Index        $index
+     * @param string|array $indexes
+     *
+     * @throws \RuntimeException
+     */
+    private function deleteIndexes(Index $index, $indexes)
+    {
+        $client = $index->getClient();
+
+        if (!is_array($indexes)) {
+            $indexes = array($indexes);
+        }
+
+        while ($indexName = array_pop($indexes)) {
             try {
+                $oldIndex = new Index($client, $indexName);
                 $oldIndex->delete();
-            } catch (ExceptionInterface $deleteOldIndexException) {
+            } catch (ExceptionInterface $e) {
                 throw new \RuntimeException(
                     sprintf(
-                        'Failed to delete old index %s with message: %s',
-                        $oldIndexName,
-                        $deleteOldIndexException->getMessage()
-                    ), 0, $deleteOldIndexException
+                        'Failed to delete index %s with message: %s',
+                        $indexName,
+                        $e->getMessage()
+                    ),
+                    $e->getCode(),
+                    $e
                 );
             }
         }

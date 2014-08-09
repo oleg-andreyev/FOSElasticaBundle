@@ -150,11 +150,12 @@ class FOSElasticaExtension extends Extension
 
             $this->indexConfigs[$name] = array(
                 'elasticsearch_name' => $indexName,
-                'reference' => $reference,
-                'name' => $name,
-                'settings' => $index['settings'],
-                'type_prototype' => isset($index['type_prototype']) ? $index['type_prototype'] : array(),
-                'use_alias' => $index['use_alias'],
+                'reference'          => $reference,
+                'name'               => $name,
+                'settings'           => $index['settings'],
+                'type_prototype'     => isset($index['type_prototype']) ? $index['type_prototype'] : array(),
+                'use_alias'          => $index['use_alias'],
+                'save_last_index'    => $index['save_last_index'],
             );
 
             if ($index['finder']) {

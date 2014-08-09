@@ -52,8 +52,9 @@ class ContainerSource implements SourceInterface
 
             $index = new IndexConfig($config['name'], $types, array(
                 'elasticSearchName' => $config['elasticsearch_name'],
-                'settings' => $config['settings'],
-                'useAlias' => $config['use_alias'],
+                'settings'          => $config['settings'],
+                'useAlias'          => $config['use_alias'],
+                'saveLastIndex'     => $config['save_last_index']
             ));
 
             $indexes[$config['name']] = $index;
