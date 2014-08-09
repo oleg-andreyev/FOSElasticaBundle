@@ -104,12 +104,6 @@ class AliasProcessor
 
         // Delete the old index(es) after the alias has been switched
         $similarIndexes = $this->findSimilarIndexes($index, $newIndexName);
-        if ($oldIndexName) {
-            $similarIndexes[] = $oldIndexName;
-            $similarIndexes = array_unique($similarIndexes);
-            sort($similarIndexes);
-        }
-
         $offset = count($similarIndexes) - $indexConfig->getSaveLastIndex();
         $this->deleteIndexes($index, array_slice($similarIndexes, 0, $offset));
     }
