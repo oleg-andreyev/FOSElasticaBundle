@@ -22,12 +22,21 @@ class ConfigManager implements ManagerInterface
     private $indexes = array();
 
     /**
-     * @param Source\SourceInterface[] $sources
+     * @var IndexTemplateConfig[]
      */
-    public function __construct(array $sources)
+    private $indexTemplates = array();
+
+    /**
+     * @param Source\SourceInterface[] $indexSources
+     * @param Source\SourceInterface[] $indexTemplateSources
+     */
+    public function __construct(array $indexSources, array $indexTemplateSources)
     {
-        foreach ($sources as $source) {
+        foreach ($indexSources as $source) {
             $this->indexes = array_merge($source->getConfiguration(), $this->indexes);
+        }
+        foreach ($indexTemplateSources as $source) {
+            $this->indexTemplates = array_merge($source->getConfiguration(), $this->indexTemplates);
         }
     }
 
@@ -69,6 +78,25 @@ class ConfigManager implements ManagerInterface
     }
 
     /**
+     * @param string $indexTemplateName
+     *
+     * @return IndexTemplateConfig
+     */
+    public function getIndexTemplateConfiguration($indexTemplateName)
+    {
+        if (!$this->hasIndexTemplateConfiguration($indexTemplateName)) {
+            throw new \InvalidArgumentException(sprintf('Index template with name "%s" is not configured.', $indexTemplateName));
+        }
+
+        return $this->indexTemplates[$indexTemplateName];
+    }
+
+    public function getIndexTemplatesNames()
+    {
+        return array_keys($this->indexTemplates);
+    }
+
+    /**
      * @param string $indexName
      *
      * @return bool
@@ -76,5 +104,10 @@ class ConfigManager implements ManagerInterface
     public function hasIndexConfiguration($indexName)
     {
         return isset($this->indexes[$indexName]);
+    }
+
+    public function hasIndexTemplateConfiguration($indexTemplateName)
+    {
+        return isset($this->indexTemplates[$indexTemplateName]);
     }
 }
