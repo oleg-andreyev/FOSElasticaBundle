@@ -132,8 +132,6 @@ class Configuration implements ConfigurationInterface
                                     ->end()
                                 ->end()
                             ->end()
-                            ->scalarNode('timeout')->end()
-                            ->scalarNode('headers')->end()
                             ->scalarNode('connectionStrategy')->defaultValue('Simple')->end()
                         ->end()
                     ->end()
