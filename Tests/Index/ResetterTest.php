@@ -332,7 +332,7 @@ class ResetterTest extends \PHPUnit_Framework_TestCase
         $this->aliasProcessor->expects($this->never())
             ->method('switchIndexAlias');
 
-        $this->resetter->postPopulate('index');
+        $this->resetter->switchIndexAlias('index');
     }
 
     public function testPostPopulate()
@@ -344,7 +344,7 @@ class ResetterTest extends \PHPUnit_Framework_TestCase
             ->method('switchIndexAlias')
             ->with($indexConfig, $index);
 
-        $this->resetter->postPopulate('index');
+        $this->resetter->switchIndexAlias('index');
     }
 
     private function dispatcherExpects(array $events)
