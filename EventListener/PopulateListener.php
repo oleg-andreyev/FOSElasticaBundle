@@ -32,6 +32,9 @@ class PopulateListener
      */
     public function onPostIndexPopulate(IndexPopulateEvent $event)
     {
+        if (!$event->isReset()) { // --no-reset is passed, do not switch alias and delete index
+            return;
+        }
         $this->resetter->switchIndexAlias($event->getIndex(), $event->getOption('delete'));
     }
 }
