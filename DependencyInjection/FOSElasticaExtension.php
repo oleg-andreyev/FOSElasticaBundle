@@ -212,7 +212,7 @@ class FOSElasticaExtension extends Extension
 
             if (isset($indexTemplate['client'])) {
                 $client = $this->getClient($indexTemplate['client']);
-                $indexDef->setFactoryService($client);
+                $indexDef->setFactory(array($client, 'getIndexTemplate'));
             }
 
             $container->setDefinition($indexId, $indexDef);

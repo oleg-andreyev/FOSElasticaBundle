@@ -31,7 +31,8 @@
             <!-- tagged with fos_elastica.index in the Extension -->
         </service>
 
-        <service id="fos_elastica.index_template_prototype" class="%fos_elastica.index_template.class%" factory-service="fos_elastica.client" factory-method="getIndexTemplate" abstract="true">
+        <service id="fos_elastica.index_template_prototype" class="%fos_elastica.index_template.class%" abstract="true">
+            <factory service="fos_elastica.client" method="getIndexTemplate"/>
             <argument /> <!-- index name -->
             <!-- tagged with fos_elastica.index in the Extension -->
         </service>
